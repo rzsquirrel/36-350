@@ -15,14 +15,24 @@ model_select = function(covariates, responses, cutoff) {
     return(pvals[2:length(pvals)])
 }
 
-run_simulation = function(n_trials, n, p, cutoff) {
+run_simulation = function(n_trials, n, p, cutoff, savefile) {
     pvals = vector()
     for(i in 1:n_trials) {
         data = generate_data(n, p)
         pvals = append(pvals, model_select(data$covariates, data$responses, cutoff))
     }
+    #hist(pvals)
+    # save the pvals
+    saveRDS(pvals, file=savefile)
+}
+
+make_plot = function(datapath) {
+    pvals = c()
+    pvals = readRDS(file=datapath)
     hist(pvals)
 }
 
 param_grid = expand.grid(c(100, 1000, 10000), c(10, 20, 50))
-apply(param_grid, 1, function(row) run_simulation(20, row[1], row[2], 0.05))
+apply(param_grid, 1, function(row) run_simulation(20, row[1], row[2], 0.05, paste('file_n',row[1],'_p',row[2],'.rds',sep='')))
+apply(param_grid, 1, function(row) make_plot(paste('file_n',row[1],'_p',row[2],'.rds',sep='')))
+
